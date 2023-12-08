@@ -14,14 +14,13 @@ ascii_art=$(cat << "EOF"
 EOF
 )
 
-# Check if the motd file exists
+# Remove the existing motd file if it exists
 if [ -e "$motd_file" ]; then
-    # Backup the current motd file
-    mv "$motd_file" "$motd_file.bak"
+    sudo rm "$motd_file"
 fi
 
 # Create a new motd file with the desired ASCII art
-echo "$ascii_art" | sudo tee "$motd_file"
+echo "$ascii_art" | sudo tee "$motd_file" > /dev/null
 
 # Display success message
 echo "The motd file has been updated with the custom ASCII art."
