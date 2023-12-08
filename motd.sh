@@ -3,6 +3,9 @@
 # Path to the motd file
 motd_file="/etc/motd"
 
+# Path to the directory for disabled update-motd.d scripts
+disabled_dir="/etc/update-motd.d-disabled"
+
 # Your desired ASCII art
 ascii_art=$(cat << "EOF"
  _____                        _____                   
@@ -23,4 +26,17 @@ fi
 echo "$ascii_art" | sudo tee "$motd_file" > /dev/null
 
 # Display success message
-echo "The motd file has been updated with the custom ASCII art."
+echo "File motd telah diperbarui dengan ASCII art yang diinginkan."
+
+# Check if disabled_dir already exists, if not, create it
+if [ ! -d "$disabled_dir" ]; then
+    sudo mkdir "$disabled_dir"
+fi
+
+# Disable update-motd.d scripts if there are any
+if [ "$(ls -A /etc/update-motd.d/)" ]; then
+    sudo mv /etc/update-motd.d/* "$disabled_dir"/
+    echo "Skrip di /etc/update-motd.d/ telah dinonaktifkan."
+else
+    echo "Tidak ada skrip di /etc/update-motd.d/ untuk dinonaktifkan."
+fi
