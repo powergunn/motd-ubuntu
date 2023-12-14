@@ -1,12 +1,15 @@
 #!/bin/bash
 
-# Path to the motd file
+# Mendeteksi sistem operasi
+os=$(uname -s)
+
+# Path menuju file motd
 motd_file="/etc/motd"
 
-# Path to the directory for disabled update-motd.d scripts
+# Path menuju direktori untuk skrip update-motd.d yang dinonaktifkan
 disabled_dir="/etc/update-motd.d-disabled"
 
-# Your desired ASCII art
+# ASCII art yang diinginkan
 ascii_art=$(cat << "EOF"
  _____                        _____                   
 |  __ \                      / ____|                  
@@ -17,26 +20,37 @@ ascii_art=$(cat << "EOF"
 EOF
 )
 
-# Remove the existing motd file if it exists
+# Fungsi untuk menonaktifkan skrip update-motd.d
+nonaktifkan_skrip_update_motd() {
+    if [ "$(ls -A /etc/update-motd.d/)" ]; then
+        sudo mv /etc/update-motd.d/* "$disabled_dir"/
+        echo "Skrip di /etc/update-motd.d/ telah dinonaktifkan."
+    else
+        echo "Tidak ada skrip di /etc/update-motd.d/ untuk dinonaktifkan."
+    fi
+}
+
+# Menghapus file motd yang sudah ada jika ada
 if [ -e "$motd_file" ]; then
     sudo rm "$motd_file"
 fi
 
-# Create a new motd file with the desired ASCII art
+# Membuat file motd baru dengan ASCII art yang diinginkan
 echo "$ascii_art" | sudo tee "$motd_file" > /dev/null
 
-# Display success message
+# Menampilkan pesan keberhasilan
 echo "File motd telah diperbarui dengan ASCII art yang diinginkan."
 
-# Check if disabled_dir already exists, if not, create it
-if [ ! -d "$disabled_dir" ]; then
-    sudo mkdir "$disabled_dir"
-fi
-
-# Disable update-motd.d scripts if there are any
-if [ "$(ls -A /etc/update-motd.d/)" ]; then
-    sudo mv /etc/update-motd.d/* "$disabled_dir"/
-    echo "Skrip di /etc/update-motd.d/ telah dinonaktifkan."
-else
-    echo "Tidak ada skrip di /etc/update-motd.d/ untuk dinonaktifkan."
-fi
+# Memeriksa sistem operasi untuk menangani skrip update-motd.d
+case "$os" in
+    Linux*)
+        # Memeriksa apakah disabled_dir sudah ada, jika tidak, membuatnya
+        if [ ! -d "$disabled_dir" ]; then
+            sudo mkdir "$disabled_dir"
+        fi
+        nonaktifkan_skrip_update_motd
+        ;;
+    *)
+        echo "Sistem operasi tidak dikenal atau tidak mendukung operasi ini."
+        ;;
+esac
